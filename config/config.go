@@ -8,11 +8,13 @@ import (
 )
 
 type Config struct {
-	DbAddr     string
-	DbName     string
-	DbUser     string
-	DbPassword string
-	Port       string
+	DbAddr        string
+	DbName        string
+	DbUser        string
+	DbPassword    string
+	Port          string
+	JWTExpiry     int
+	RefreshExpiry int
 }
 
 func GetConfig() (Config, error) {
@@ -21,11 +23,13 @@ func GetConfig() (Config, error) {
 		return Config{}, err
 	}
 	c := Config{
-		DbAddr:     os.Getenv("DB_ADDR"),
-		DbName:     os.Getenv("DB_NAME"),
-		DbUser:     os.Getenv("DB_USER"),
-		DbPassword: os.Getenv("DB_PASSWORD"),
-		Port:       os.Getenv("PORT"),
+		DbAddr:        os.Getenv("DB_ADDR"),
+		DbName:        os.Getenv("DB_NAME"),
+		DbUser:        os.Getenv("DB_USER"),
+		DbPassword:    os.Getenv("DB_PASSWORD"),
+		Port:          os.Getenv("PORT"),
+		JWTExpiry:     3600,
+		RefreshExpiry: 604800,
 	}
 
 	if c.Port == "" {

@@ -12,5 +12,6 @@ type LoginDto struct {
 }
 
 type AuthResponseDto struct {
-	Token string `json:"token"`
+	AccessToken  string `json:"access"`
+	RefreshToken string `json:"refresh"`
 }
