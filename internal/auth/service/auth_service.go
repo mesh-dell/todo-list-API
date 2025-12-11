@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mesh-dell/todo-list-API/internal/auth"
 	"github.com/mesh-dell/todo-list-API/internal/auth/dtos"
 	"github.com/mesh-dell/todo-list-API/internal/auth/repository"
+	custom "github.com/mesh-dell/todo-list-API/internal/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -20,20 +20,20 @@ func NewAuthService(r repository.IAuthRepository) *AuthService {
 	}
 }
 
-func (svc *AuthService) Login(req dtos.LoginDto, context context.Context) (string, error) {
-	user, err := svc.repo.GetUserByEmail(context, req.Email)
-	if err != nil {
-		return "", fmt.Errorf("invalid credentials")
+func (svc *AuthService) Login(req dtos.LoginDto, context context.Context) (*auth.User, error) {
+	user, _ := svc.repo.GetUserByEmail(context, req.Email)
+	if user == nil {
+		return nil, custom.ErrInvalidCredentials
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
-		return "", fmt.Errorf("invalid credentials")
+		return nil, custom.ErrInvalidCredentials
 	}
-	return GenerateJWT(user.ID)
+	return user, nil
 }
 
-func (svc *AuthService) Register(req dtos.RegisterDto, context context.Context) (string, error) {
-	if existing, _ := svc.repo.GetUserByEmail(context, req.Email); existing != nil {
-		return "", fmt.Errorf("email already exists")
+func (svc *AuthService) Register(req dtos.RegisterDto, context context.Context) (uint, error) {
+	if exists, _ := svc.repo.GetUserByEmail(context, req.Email); exists != nil {
+		return 0, custom.ErrEmailExists
 	}
 	bytes, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	user := &auth.User{
@@ -43,11 +43,7 @@ func (svc *AuthService) Register(req dtos.RegisterDto, context context.Context) 
 	}
 	err := svc.repo.CreateUser(context, user)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
-	token, err := GenerateJWT(user.ID)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return user.ID, err
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mesh-dell/todo-list-API/internal/auth"
 	"gorm.io/gorm"
@@ -19,10 +20,10 @@ func (r *AuthRepository) CreateUser(context context.Context, user *auth.User) er
 // GetUserByEmail implements IAuthRepository.
 func (r *AuthRepository) GetUserByEmail(context context.Context, email string) (*auth.User, error) {
 	user, err := gorm.G[auth.User](r.db).Where("email = ?", email).First(context)
-	if err != nil {
-		return nil, err
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
-	return &user, nil
+	return &user, err
 }
 
 func NewAuthRepository(db *gorm.DB) IAuthRepository {
