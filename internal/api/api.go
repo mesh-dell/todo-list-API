@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mesh-dell/todo-list-API/config"
+	rateLimitMiddleware "github.com/mesh-dell/todo-list-API/internal/api/middleware"
 	"github.com/mesh-dell/todo-list-API/internal/auth"
 	"github.com/mesh-dell/todo-list-API/internal/auth/handler"
 	"github.com/mesh-dell/todo-list-API/internal/auth/middleware"
@@ -45,6 +46,7 @@ func InitServer(config config.Config) {
 
 	protected := router.Group("/todos")
 	protected.Use(middleware.AuthMiddleware(os.Getenv("ACCESS_SECRET")))
+	protected.Use(rateLimitMiddleware.LimitByRequest())
 	{
 		protected.POST("", todoHandler.Create)
 		protected.GET("/:id", todoHandler.FindByID)
