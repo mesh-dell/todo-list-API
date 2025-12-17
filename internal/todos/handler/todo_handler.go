@@ -7,10 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	custom "github.com/mesh-dell/todo-list-API/internal/errors"
-	"github.com/mesh-dell/todo-list-API/internal/todos"
 	"github.com/mesh-dell/todo-list-API/internal/todos/dtos"
 	"github.com/mesh-dell/todo-list-API/internal/todos/service"
-	"github.com/mesh-dell/todo-list-API/internal/utils"
 )
 
 type TodoHandler struct {
@@ -143,28 +141,20 @@ func (h *TodoHandler) FindAllForUser(c *gin.Context) {
 
 	page, _ := strconv.Atoi(c.Query("page"))
 	limit, _ := strconv.Atoi(c.Query("limit"))
-	pagination := &utils.Pagination{
-		Page:  page,
-		Limit: limit,
-	}
 
-	todoItems, err := h.svc.FindAllForUser(c.Request.Context(), userID, pagination)
+	queryParams := dtos.QueryParams{
+		Page:        page,
+		Limit:       limit,
+		SearchQuery: c.Query("search_query"),
+		SortBy:      c.DefaultQuery("sort_by", "created_at"),
+		Order:       c.DefaultQuery("order", "desc"),
+	}
+	paginatedTodos, err := h.svc.FindAllForUser(c.Request.Context(), userID, queryParams)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	var todoItemsRes []dtos.TodoItemResponseDto
-	d := todoItems.Data.(*[]todos.TodoItem)
-	for _, item := range *d {
-		todoItemsRes = append(todoItemsRes, dtos.TodoItemResponseDto{
-			Id:          item.ID,
-			Title:       item.Title,
-			Description: item.Description,
-		})
-	}
-
-	todoItems.Data = todoItemsRes
-	c.IndentedJSON(http.StatusOK, todoItems)
+	c.IndentedJSON(http.StatusOK, paginatedTodos)
 }
 func NewTodoHandler(s service.TodoService) *TodoHandler {
 	return &TodoHandler{

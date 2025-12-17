@@ -3,13 +3,11 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	custom "github.com/mesh-dell/todo-list-API/internal/errors"
 	"github.com/mesh-dell/todo-list-API/internal/todos"
 	"github.com/mesh-dell/todo-list-API/internal/todos/dtos"
 	"github.com/mesh-dell/todo-list-API/internal/todos/repository"
-	"github.com/mesh-dell/todo-list-API/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -33,8 +31,8 @@ func (svc *TodoService) Create(ctx context.Context, userID uint, req dtos.TodoIt
 	return todoItem, err
 }
 
-func (svc *TodoService) FindAllForUser(ctx context.Context, userID uint, p *utils.Pagination) (*utils.Pagination, error) {
-	return svc.repo.FindAllForUser(ctx, userID, p)
+func (svc *TodoService) FindAllForUser(ctx context.Context, userID uint, queryParams dtos.QueryParams) (dtos.TodoItemsPaginatedResponseDto, error) {
+	return svc.repo.FindAllForUser(ctx, userID, queryParams)
 }
 
 func (svc *TodoService) FindByID(ctx context.Context, id uint) (todos.TodoItem, error) {
@@ -77,6 +75,5 @@ func (svc *TodoService) Update(ctx context.Context, id uint, userID uint, req dt
 	if err != nil {
 		return todos.TodoItem{}, err
 	}
-	fmt.Println(req.Title)
 	return item, nil
 }
