@@ -31,12 +31,12 @@ Create a `.env` file in the root directory and add the following:
 
 ```env
 DB_USER=root
-DB_NAME=todoist
-DB_PASSWORD=PWD
+DB_NAME=yourDbName
+DB_PASSWORD=yourPassword
 DB_ADDR=localhost:3306
 PORT=8080
-ACCESS_SECRET=I8qWS5jUqQKeWrCpZF0mmdeaj7kxu20OFBENwQAJbzA=
-REFRESH_SECRET=5gUkdq2EZ6zWDAuNbdzTcE0WVJ+KP9ZMSMrSjbPVSKE=
+ACCESS_SECRET=yourSecret
+REFRESH_SECRET=yourRefreshSecret
 
 ```
 
