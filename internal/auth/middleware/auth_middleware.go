@@ -16,7 +16,11 @@ func AuthMiddleware(secret string) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
 			return
 		}
-		tokenStr := strings.Split(authHeader, "Bearer ")[1]
+		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenStr == "Bearer" {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+			return
+		}
 		token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
 			return []byte(secret), nil
 		})

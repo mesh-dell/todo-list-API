@@ -35,12 +35,21 @@ func (svc *TodoService) FindAllForUser(ctx context.Context, userID uint, queryPa
 	return svc.repo.FindAllForUser(ctx, userID, queryParams)
 }
 
-func (svc *TodoService) FindByID(ctx context.Context, id uint) (todos.TodoItem, error) {
-	return svc.repo.FindByID(ctx, id)
+func (svc *TodoService) FindByID(ctx context.Context, id uint, userID uint) (todos.TodoItem, error) {
+	item, err := svc.repo.FindByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return todos.TodoItem{}, custom.ErrItemNotFound
+		}
+	}
+	if item.UserId != userID {
+		return todos.TodoItem{}, custom.ErrCannotGetItem
+	}
+	return item, nil
 }
 
 func (svc *TodoService) Delete(ctx context.Context, id uint, userID uint) error {
-	item, err := svc.FindByID(ctx, id)
+	item, err := svc.repo.FindByID(ctx, id)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -56,7 +65,7 @@ func (svc *TodoService) Delete(ctx context.Context, id uint, userID uint) error 
 }
 
 func (svc *TodoService) Update(ctx context.Context, id uint, userID uint, req dtos.TodoItemRequestDto) (todos.TodoItem, error) {
-	item, err := svc.FindByID(ctx, id)
+	item, err := svc.repo.FindByID(ctx, id)
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

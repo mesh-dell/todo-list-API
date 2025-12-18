@@ -41,15 +41,32 @@ func (h *TodoHandler) Create(c *gin.Context) {
 
 func (h *TodoHandler) FindByID(c *gin.Context) {
 	idStr := c.Param("id")
+
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadGateway, gin.H{"error": "invalid id"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
-	item, err := h.svc.FindByID(c.Request.Context(), uint(id))
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "todo item not found"})
+
+	userIDStr, exists := c.Get("userID")
+	if !exists {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
 		return
+	}
+	userID := userIDStr.(uint)
+
+	item, err := h.svc.FindByID(c.Request.Context(), uint(id), userID)
+	if err != nil {
+		if errors.Is(err, custom.ErrItemNotFound) {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		} else if errors.Is(err, custom.ErrCannotGetItem) {
+			c.IndentedJSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 	c.IndentedJSON(http.StatusOK, dtos.TodoItemResponseDto{
 		Id:          item.ID,

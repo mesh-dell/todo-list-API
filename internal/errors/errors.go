@@ -8,4 +8,5 @@ var (
 	ErrItemNotFound       = errors.New("todo item not found")
 	ErrCannotUpdateItem   = errors.New("Forbidden cannot update this todo item")
 	ErrCannotDeleteItem   = errors.New("Forbidden cannot delete this todo item")
+	ErrCannotGetItem      = errors.New("Forbidden cannot get this todo item")
 )
