@@ -25,7 +25,7 @@ func InitServer(config config.Config) {
 	authRepository := repository.NewAuthRepository(gormDb.DbClient)
 	authService := service.NewAuthService(authRepository)
 	tokenRepository := repository.NewRefreshTokenRepository(gormDb.DbClient)
-	tokenService := service.NewTokenService(*tokenRepository)
+	tokenService := service.NewTokenService(tokenRepository)
 	authHandler := handler.NewAuthHandler(
 		authService,
 		tokenService,
